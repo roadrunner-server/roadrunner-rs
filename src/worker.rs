@@ -1,4 +1,5 @@
 use crate::state::WorkerState;
+use crate::errors::Error;
 
 trait Worker {
     // time in unix nano format
@@ -11,7 +12,14 @@ trait Worker {
 
     fn state() -> WorkerState;
 
-    fn wait() -> Result<>
+    fn wait() -> Result<(), Error>;
+
+    fn stop() -> Result<(), Error>;
+
+    fn kill() -> Result<(), Error>;
+
+    // relay
+    // attach relay
 }
 
 
