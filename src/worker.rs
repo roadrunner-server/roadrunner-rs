@@ -11,7 +11,7 @@ trait Worker {
 
     fn state() -> WorkerState;
 
-
+    fn wait() -> Result<>
 }
 
 
