@@ -10,6 +10,7 @@ edition = "2018"
 clap = "2.33.0"
 futures = "0.3.6"
 structopt = "0.3.18"
+chrono = "0.4.19"
 
 [workspace]
-members = ["goridge", "roadrunner"]
+members = ["goridge"]

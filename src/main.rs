@@ -1,3 +1,5 @@
+mod worker;
+
 use clap::{App, AppSettings, SubCommand};
 use std::error::Error;
 use std::io::{Read, Write};
