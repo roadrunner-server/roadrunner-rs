@@ -8,8 +8,8 @@ edition = "2018"
 
 [dependencies]
 clap = "2.33.0"
-futures = "0.3.4"
-structopt = "0.3.9"
+futures = "0.3.6"
+structopt = "0.3.18"
 
 [workspace]
 members = ["goridge", "roadrunner"]
