@@ -1,4 +1,6 @@
+#![warn(rust_2018_idioms)]
 mod worker;
+mod state;
 
 use clap::{App, AppSettings, SubCommand};
 use std::error::Error;
