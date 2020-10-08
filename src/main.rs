@@ -4,6 +4,7 @@ mod state;
 mod errors;
 use clap::{App, AppSettings, SubCommand};
 
+
 fn main() {
     let cli = App::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))

@@ -2,6 +2,8 @@ use std::fmt::Formatter;
 
 pub enum Error {
     PipeError { cause: String },
+
+    PrefixValidationError { cause: String },
 }
 
 impl std::fmt::Display for Error {
@@ -9,6 +11,9 @@ impl std::fmt::Display for Error {
         match self {
             Error::PipeError { cause } => {
                 write!(f, "pipe send error, cause: {}", cause)
+            }
+            Error::PrefixValidationError { cause } => {
+                write!(f, "prefix validation error: {}", cause)
             }
         }
     }

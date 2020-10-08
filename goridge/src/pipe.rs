@@ -3,7 +3,7 @@
 use std::process::{ChildStdin, ChildStdout};
 use std::io::{Read, Write};
 use crate::errors::Error;
-use crate::prefix::Prefix;
+use crate::prefix::{Prefix, Checker};
 
 trait Relay {
     fn send(&mut self, data: &[u8], flags: u8) -> Result<usize, Error>;
@@ -50,14 +50,14 @@ impl Relay for PipeRelay {
             stdout.read_exact(&mut p)?; // read exact prefix data
         }
 
+        p.valid()?;
 
 
-
-
-
+        // Read the rest data
         let mut data = vec![];
-
-
+        if let Some(mut stdout) = self.child_stdout.take() {
+            stdout.read_to_end(&mut data)?;
+        }
 
         Ok(data)
     }
