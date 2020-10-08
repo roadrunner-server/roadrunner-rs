@@ -1,15 +1,17 @@
 #![allow(dead_code)]
 
 use std::process::{ChildStdin, ChildStdout, Command, Stdio};
+use std::io::{Read, Write};
+use crate::errors::Error;
 
 trait Relay {
-    fn send(data: &[u8], flags: u8);
-    fn receive(data: &[u8]);
-    fn close();
+    fn send(&mut self, data: &[u8], flags: u8) -> Result<usize, Error>;
+    fn receive(&self, data: &[u8]);
+    fn close(&self);
 }
 
 // TODO send raw fd?
-const BUFFER_SIZE: u64 = 655336;
+const BUFFER_SIZE: u64 = 65536;
 
 struct PipeRelay {
     buf_size: u64,
@@ -28,15 +30,18 @@ impl PipeRelay {
 }
 
 impl Relay for PipeRelay {
-    fn send(data: &[u8], flags: u8) {
+    fn send(&mut self, data: &[u8], flags: u8) -> Result<usize, Error> {
+        if let Some(mut stdin) = self.child_stdin.take() {
+            stdin.write_all(data)?;
+        };
+        Err(Error::PipeError { cause: "failed to write to stdin".to_string() })
+    }
+
+    fn receive(&self, data: &[u8]) {
         unimplemented!()
     }
 
-    fn receive(data: &[u8]) {
-        unimplemented!()
-    }
-
-    fn close() {
+    fn close(&self) {
         unimplemented!()
     }
 }
