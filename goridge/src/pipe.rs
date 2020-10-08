@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 
-use std::process::{ChildStdin, ChildStdout, Command, Stdio};
+use std::process::{ChildStdin, ChildStdout};
 use std::io::{Read, Write};
 use crate::errors::Error;
+use crate::prefix::Prefix;
 
 trait Relay {
     fn send(&mut self, data: &[u8], flags: u8) -> Result<usize, Error>;
@@ -44,10 +45,19 @@ impl Relay for PipeRelay {
     }
 
     fn receive(&mut self) -> Result<Vec<u8>, Error> {
-        let mut data = vec![];
+        let mut p = Prefix::default();
         if let Some(mut stdout) = self.child_stdout.take() {
-            stdout.read_to_end(&mut data)?;
+            stdout.read_exact(&mut p)?; // read exact prefix data
         }
+
+
+
+
+
+
+        let mut data = vec![];
+
+
 
         Ok(data)
     }
@@ -70,16 +80,14 @@ impl Relay for PipeRelay {
 mod tests {
     use std::process::{Command, Stdio};
     use crate::pipe::{PipeRelay, Relay};
-    use super::*;
-    use std::time::Instant;
 
     #[test]
     fn test_pipe_init() {
         let process = match Command::new("/usr/bin/php")
-            .arg("/home/valery/Projects/opensource/github/roadrunner-rr/goridge/test/hello.php")
+            .arg("./test/hello.php")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            // .current_dir("/home/valery/Projects/opensource/")
+            .current_dir(".")
             .spawn()
         {
             Err(why) => panic!("couldn't spawn php: {}", why.to_string()),
@@ -88,14 +96,8 @@ mod tests {
 
         let mut relay = PipeRelay::new_relay(process.stdin, process.stdout);
 
-        let now = Instant::now();
-        for _ in 0..1000000 {
-            if let Ok(data) = relay.receive_string() {
-                assert_eq!("hello1 - test".to_string(), data);
-            }
+        if let Ok(data) = relay.receive_string() {
+            assert_eq!("hello1 - test".to_string(), data);
         }
-
-        println!("{}", now.elapsed().as_secs());
-
     }
 }
