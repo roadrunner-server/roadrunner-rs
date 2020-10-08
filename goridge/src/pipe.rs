@@ -6,8 +6,14 @@ use crate::errors::Error;
 
 trait Relay {
     fn send(&mut self, data: &[u8], flags: u8) -> Result<usize, Error>;
-    fn receive(&self, data: &[u8]);
+    fn receive(&mut self) -> Result<Vec<u8>, Error>;
+    fn receive_string(&mut self) -> Result<String, Error>;
     fn close(&self);
+}
+
+struct Message {
+    flags: u8,
+    data: [u8],
 }
 
 // TODO send raw fd?
@@ -33,15 +39,63 @@ impl Relay for PipeRelay {
     fn send(&mut self, data: &[u8], flags: u8) -> Result<usize, Error> {
         if let Some(mut stdin) = self.child_stdin.take() {
             stdin.write_all(data)?;
-        };
-        Err(Error::PipeError { cause: "failed to write to stdin".to_string() })
+        }
+        Ok(data.len())
     }
 
-    fn receive(&self, data: &[u8]) {
-        unimplemented!()
+    fn receive(&mut self) -> Result<Vec<u8>, Error> {
+        let mut data = vec![];
+        if let Some(mut stdout) = self.child_stdout.take() {
+            stdout.read_to_end(&mut data)?;
+        }
+
+        Ok(data)
+    }
+
+    fn receive_string(&mut self) -> Result<String, Error> {
+        let mut s = String::new();
+        if let Some(mut stdout) = self.child_stdout.take() {
+            stdout.read_to_string(&mut s)?;
+        }
+        Ok(s)
     }
 
     fn close(&self) {
         unimplemented!()
+    }
+}
+
+#[allow(soft_unstable)]
+#[cfg(test)]
+mod tests {
+    use std::process::{Command, Stdio};
+    use crate::pipe::{PipeRelay, Relay};
+    use super::*;
+    use std::time::Instant;
+
+    #[test]
+    fn test_pipe_init() {
+        let process = match Command::new("/usr/bin/php")
+            .arg("/home/valery/Projects/opensource/github/roadrunner-rr/goridge/test/hello.php")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            // .current_dir("/home/valery/Projects/opensource/")
+            .spawn()
+        {
+            Err(why) => panic!("couldn't spawn php: {}", why.to_string()),
+            Ok(process) => process,
+        };
+
+        let mut relay = PipeRelay::new_relay(process.stdin, process.stdout);
+
+        let now = Instant::now();
+        for _ in 0..1000000 {
+            if let Ok(data) = relay.receive_string() {
+                assert_eq!("hello1 - test".to_string(), data);
+            }
+        }
+
+        println!("{}", now.elapsed().as_secs());
+
     }
 }
