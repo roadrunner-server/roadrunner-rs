@@ -1,11 +1,10 @@
 #![warn(rust_2018_idioms)]
 #![allow(dead_code)]
 #![allow(unused_variables)]
-mod worker;
-mod state;
 mod errors;
+mod state;
+mod worker;
 use clap::{App, AppSettings, SubCommand};
-
 
 fn main() {
     let cli = App::new(env!("CARGO_PKG_NAME"))
@@ -26,6 +25,4 @@ fn main() {
     }
 }
 
-fn run_process() {
-
-}
+fn run_process() {}

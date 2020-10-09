@@ -1,5 +1,5 @@
-use crate::state::WorkerState;
 use crate::errors::Error;
+use crate::state::WorkerState;
 use goridge_rs::relay::Relay;
 use std::time::Instant;
 
@@ -48,7 +48,10 @@ impl<T: Relay + Copy> WorkerProcess<T> {
     }
 }
 
-impl<T> Worker<T> for WorkerProcess<T> where T: Relay + Copy {
+impl<T> Worker<T> for WorkerProcess<T>
+where
+    T: Relay + Copy,
+{
     fn created(&self) -> u64 {
         unimplemented!()
     }
