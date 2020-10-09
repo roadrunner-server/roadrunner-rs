@@ -22,6 +22,12 @@ const STATE_REMOVE:u64 = 0;
 
 pub struct WorkerState {}
 
+impl Default for WorkerState {
+    fn default() -> Self {
+        WorkerState {}
+    }
+}
+
 impl State for WorkerState {
     fn value() -> i64 {
         unimplemented!()

@@ -11,3 +11,4 @@ clap = "2.33.0"
 futures = "0.3.6"
 structopt = "0.3.19"
 chrono = "0.4.19"
+goridge-rs = { path = "../goridge-rs", version = "0.1.0"}
