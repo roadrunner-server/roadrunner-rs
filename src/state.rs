@@ -19,6 +19,7 @@ const STATE_STOPPED: u64 = 0;
 const STATE_ERRORED: u64 = 0;
 const STATE_REMOVE: u64 = 0;
 
+#[derive(Clone, Copy)]
 pub struct WorkerState {}
 
 impl Default for WorkerState {
