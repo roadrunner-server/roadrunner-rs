@@ -77,6 +77,7 @@ impl<T> Worker<T> for WorkerProcess<T>
 
     fn start(&mut self) -> Result<(), Error> {
         let spawned = self.cmd.spawn()?;
+        let stdout = spawned.stdin.unwrap();
         Ok(())
     }
 
