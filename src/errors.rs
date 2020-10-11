@@ -4,6 +4,13 @@ use std::fmt::{Debug, Formatter};
 #[derive(Debug)]
 pub enum Error {
     WaitError { cause: String },
+    IoError { cause: String },
+}
+
+impl From<std::io::Error> for Error {
+    fn from(err: std::io::Error) -> Self {
+        Error::IoError { cause: err.to_string() }
+    }
 }
 
 impl fmt::Display for Error {

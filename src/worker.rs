@@ -76,18 +76,7 @@ impl<T> Worker<T> for WorkerProcess<T>
     }
 
     fn start(&mut self) -> Result<(), Error> {
-        let spawned = self.cmd.spawn();
-        match spawned {
-            Ok(process) => {
-                if self.child.take().is_none() {
-                    self.child = Option::from(process);
-                }
-            }
-            Err(err) => {
-                return Err(Error::WaitError { cause: "start error".to_string() });
-            }
-        };
-
+        let spawned = self.cmd.spawn()?;
         Ok(())
     }
 
