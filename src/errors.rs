@@ -17,6 +17,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Error::WaitError { cause } => write!(f, "wait error, reason: {}", cause),
+            Error::IoError { cause } => write!(f, "io error, reason: {}", cause),
         }
     }
 }
