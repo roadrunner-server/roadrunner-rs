@@ -1,9 +1,10 @@
 use crate::errors::Error;
 use crate::state::WorkerState;
 use goridge_rs::relay::Relay;
-use std::process::{Command};
+use std::process::{Command, ChildStdin, ChildStdout, ChildStderr};
 use std::time::Instant;
 use std::process::Child;
+use std::io::{BufWriter, BufReader};
 
 pub trait Worker<T: Relay> {
     // time in unix nano format
@@ -29,6 +30,12 @@ pub trait Worker<T: Relay> {
     fn attach_relay(&mut self, rl: T);
 }
 
+struct ChildProcess {
+    stdin: Option<BufWriter<ChildStdin>>,
+    stdout: Option<ChildStdout>,
+    stderr: Option<ChildStderr>,
+}
+
 pub struct WorkerProcess<T: Relay> {
     created: std::time::Instant,
     // events channel
@@ -36,6 +43,7 @@ pub struct WorkerProcess<T: Relay> {
     cmd: std::process::Command,
     pid: u16,
     child: Option<Child>,
+    child_fds: ChildProcess,
     // errbuffer
     // endstate
     relay: T,
@@ -47,6 +55,11 @@ impl<T: Relay> WorkerProcess<T> {
             created: Instant::now(),
             state: WorkerState::default(),
             cmd: command,
+            child_fds: ChildProcess {
+                stdin:,
+                stdout: None,
+                stderr: None,
+            },
             pid: 0,
             relay: rl,
             child: None,
@@ -76,7 +89,11 @@ impl<T> Worker<T> for WorkerProcess<T>
     }
 
     fn start(&mut self) -> Result<(), Error> {
-        let spawned = self.cmd.spawn()?;
+        let mut spawned = self.cmd.spawn()?;
+        let stdin = BufWriter::new(spawned.stdin.take().unwrap());
+        let stdout = BufReader::new(spawned.stdout.take().unwrap());
+        let stderr = BufReader::new(spawned.stderr.take().unwrap());
+        self.child_fds.stdin = Option::from(stdin);
         Ok(())
     }
 
@@ -116,8 +133,8 @@ mod tests {
 
     #[test]
     fn test_init_worker() {
-        let mut command = Command::new("ls");
-        let mut pipe_relay = PipeRelay::new_relay(None, None);
+        let command = Command::new("ls");
+        let pipe_relay = PipeRelay::new_relay(None, None);
         let mut worker = WorkerProcess::new(pipe_relay, command);
         let a = worker.start();
         let b = worker.wait();
