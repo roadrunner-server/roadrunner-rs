@@ -1,10 +1,10 @@
 use crate::errors::Error;
 use crate::state::WorkerState;
-use goridge_rs::relay::Relay;
 use std::process::{Command, ChildStdin, ChildStdout, ChildStderr};
 use std::time::Instant;
 use std::process::Child;
 use std::io::{BufWriter, BufReader};
+use goridge_rs::relay::Relay;
 
 pub trait Worker<T: Relay> {
     // time in unix nano format
@@ -56,7 +56,7 @@ impl<T: Relay> WorkerProcess<T> {
             state: WorkerState::default(),
             cmd: command,
             child_fds: ChildProcess {
-                stdin:,
+                stdin: None,
                 stdout: None,
                 stderr: None,
             },
