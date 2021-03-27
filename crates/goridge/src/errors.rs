@@ -3,6 +3,8 @@ use std::fmt::Formatter;
 pub type GoridgeResult<T> = Result<T, Error>;
 
 pub enum Error {
+    HeaderLenError { cause: String },
+
     PipeError { cause: String },
 
     PrefixValidationError { cause: String },
@@ -11,6 +13,7 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            Error::HeaderLenError { cause } => write!(f, "incorrect len, cause: {}", cause),
             Error::PipeError { cause } => write!(f, "pipe send error, cause: {}", cause),
             Error::PrefixValidationError { cause } => {
                 write!(f, "prefix validation error: {}", cause)
