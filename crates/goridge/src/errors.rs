@@ -1,7 +1,6 @@
 use std::fmt::Formatter;
 
-pub type GoridgeResult<T> = Result<T, Error>;
-
+#[derive(Debug)]
 pub enum Error {
     HeaderLenError { cause: String },
 

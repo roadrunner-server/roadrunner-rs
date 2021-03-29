@@ -46,6 +46,6 @@ mod tests {
         let mut ff = Frame::new();
         ff.write_hl(3);
         println!("{:?}", ff);
-        ff.read_header(&[0; 11]);
+        ff.read_header(&[0; 11]).expect("errjor");
     }
 }
