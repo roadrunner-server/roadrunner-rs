@@ -1,10 +1,10 @@
 use crate::errors::Error;
 use crate::state::WorkerState;
-use std::process::{Command, ChildStdin, ChildStdout, ChildStderr};
-use std::time::Instant;
-use std::process::Child;
-use std::io::{BufWriter, BufReader};
 use goridge_rs::relay::Relay;
+use std::io::{BufReader, BufWriter};
+use std::process::Child;
+use std::process::{ChildStderr, ChildStdin, ChildStdout, Command};
+use std::time::Instant;
 
 pub trait Worker<T: Relay> {
     // time in unix nano format
@@ -28,6 +28,15 @@ pub trait Worker<T: Relay> {
     // fn relay(&self) -> T;
 
     fn attach_relay(&mut self, rl: T);
+
+    // state
+    fn value() -> i64;
+    fn set(value: u64);
+    fn num_execs() -> u64;
+    fn is_active() -> bool;
+    fn register_exec();
+    fn set_last_used(lu: u64);
+    fn last_used() -> u64;
 }
 
 struct ChildProcess {
@@ -44,8 +53,6 @@ pub struct WorkerProcess<T: Relay> {
     pid: u16,
     child: Option<Child>,
     child_fds: ChildProcess,
-    // errbuffer
-    // endstate
     relay: T,
 }
 
@@ -106,7 +113,9 @@ impl<T> Worker<T> for WorkerProcess<T>
             }
         }
 
-        Err(Error::WaitError { cause: "some error".to_string() })
+        Err(Error::WaitError {
+            cause: "some error".to_string(),
+        })
     }
 
     fn stop(&self) -> Result<(), Error> {
@@ -123,6 +132,34 @@ impl<T> Worker<T> for WorkerProcess<T>
 
     fn attach_relay(&mut self, rl: T) {
         self.relay = rl;
+    }
+
+    fn value() -> i64 {
+        todo!()
+    }
+
+    fn set(value: u64) {
+        todo!()
+    }
+
+    fn num_execs() -> u64 {
+        todo!()
+    }
+
+    fn is_active() -> bool {
+        todo!()
+    }
+
+    fn register_exec() {
+        todo!()
+    }
+
+    fn set_last_used(lu: u64) {
+        todo!()
+    }
+
+    fn last_used() -> u64 {
+        todo!()
     }
 }
 

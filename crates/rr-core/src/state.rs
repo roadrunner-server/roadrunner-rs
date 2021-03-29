@@ -1,3 +1,6 @@
+/// State represents current state of the worker
+
+
 trait State {
     fn value() -> i64;
     fn set(value: u64);
@@ -7,17 +10,6 @@ trait State {
     fn set_last_used(lu: u64);
     fn last_used() -> u64;
 }
-
-const STATE_INACTIVE: u64 = 0;
-const STATE_READY: u64 = 0;
-const STATE_WORKING: u64 = 0;
-const STATE_INVALID: u64 = 0;
-const STATE_STOPPING: u64 = 0;
-const STATE_KILLING: u64 = 0;
-const STATE_KILLED: u64 = 0;
-const STATE_STOPPED: u64 = 0;
-const STATE_ERRORED: u64 = 0;
-const STATE_REMOVE: u64 = 0;
 
 #[derive(Clone, Copy)]
 pub struct WorkerState {}
