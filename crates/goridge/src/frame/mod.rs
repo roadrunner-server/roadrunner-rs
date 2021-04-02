@@ -32,7 +32,7 @@ impl Frame {
     }
 
     #[inline]
-    fn read_header(&self, data: &[u8]) -> Result<Self, Error> {
+    pub  fn read_header(&self, data: &[u8]) -> Result<Self, Error> {
         if data.len() < 12 {
             return Err(Error::HeaderLenError { cause: "len is less than 12".to_string() });
         }
@@ -42,7 +42,7 @@ impl Frame {
         })
     }
 
-    fn read_frame(&self, data: &[u8]) -> Self {
+    pub fn read_frame(&self, data: &[u8]) -> Self {
         // get options bits
         let opt = data[0].bitand(0x0F);
 
@@ -65,12 +65,12 @@ impl Frame {
     }
 
     #[inline]
-    fn version(&self) -> u8 {
+    pub fn version(&self) -> u8 {
         self.header[0] >> 4
     }
 
     #[inline]
-    fn write_version(&mut self, version: u8) {
+    pub fn write_version(&mut self, version: u8) {
         if version > 15 {
             panic!("version should be less than 2 bytes (15)")
         }
@@ -78,7 +78,7 @@ impl Frame {
         self.header[0] |= version << 4
     }
 
-    
+
 }
 
 
