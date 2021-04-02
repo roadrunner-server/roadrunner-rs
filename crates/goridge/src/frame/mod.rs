@@ -55,7 +55,7 @@ impl Frame {
 
         let mut frame = Frame {
             header: data[..12_usize].try_into().expect("array with incorrect length"),
-            payload: data[12_usize..].try_into().expect("can't transform slice into vector"),
+            payload: data[12_usize..].to_vec(),//.expect("can't transform slice into vector"),
         };
 
         frame.header[10] = 0;
@@ -63,6 +63,22 @@ impl Frame {
 
         frame
     }
+
+    #[inline]
+    fn version(&self) -> u8 {
+        self.header[0] >> 4
+    }
+
+    #[inline]
+    fn write_version(&mut self, version: u8) {
+        if version > 15 {
+            panic!("version should be less than 2 bytes (15)")
+        }
+
+        self.header[0] |= version << 4
+    }
+
+    
 }
 
 
