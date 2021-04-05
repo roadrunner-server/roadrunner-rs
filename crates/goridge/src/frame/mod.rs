@@ -1,3 +1,5 @@
+mod frame_flags;
+
 use std::convert::{TryInto};
 use crate::errors::Error;
 use std::ops::BitAnd;
@@ -90,6 +92,18 @@ impl Frame {
             panic!("header len can't be more than 15 (4bits)");
         }
         self.header[0] |= hl + 1
+    }
+
+    #[inline]
+    pub fn read_flags(&self) -> u8 {
+        self.header[1]
+    }
+
+    #[inline]
+    pub fn write_flags(&mut self, flags: &[frame_flags::Flag]) {
+       for flag in flags {
+           self.header[1] |= *flag as u8;
+       }
     }
 }
 
