@@ -32,7 +32,7 @@ impl Frame {
     }
 
     #[inline]
-    pub  fn read_header(&self, data: &[u8]) -> Result<Self, Error> {
+    pub fn read_header(&self, data: &[u8]) -> Result<Self, Error> {
         if data.len() < 12 {
             return Err(Error::HeaderLenError { cause: "len is less than 12".to_string() });
         }
@@ -78,7 +78,14 @@ impl Frame {
         self.header[0] |= version << 4
     }
 
+    #[inline]
+    pub fn read_hl(&self) -> u8 {
+        self.header[0] & 0x0F
+    }
 
+    fn increment_hl(&mut self, hl: u8) {
+        let hl = self.read_header()
+    }
 }
 
 

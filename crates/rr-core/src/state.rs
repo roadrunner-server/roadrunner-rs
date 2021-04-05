@@ -1,6 +1,5 @@
 /// State represents current state of the worker
 
-
 trait State {
     fn value() -> i64;
     fn set(value: u64);
