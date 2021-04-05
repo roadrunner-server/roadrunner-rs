@@ -57,7 +57,7 @@ impl Frame {
 
         let mut frame = Frame {
             header: data[..12_usize].try_into().expect("array with incorrect length"),
-            payload: data[12_usize..].to_vec(),//.expect("can't transform slice into vector"),
+            payload: data[12_usize..].to_vec(),
         };
 
         frame.header[10] = 0;
@@ -101,9 +101,9 @@ impl Frame {
 
     #[inline]
     pub fn write_flags(&mut self, flags: &[frame_flags::Flag]) {
-       for flag in flags {
-           self.header[1] |= *flag as u8;
-       }
+        for flag in flags {
+            self.header[1] |= *flag as u8;
+        }
     }
 }
 
