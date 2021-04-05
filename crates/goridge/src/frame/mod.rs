@@ -83,8 +83,13 @@ impl Frame {
         self.header[0] & 0x0F
     }
 
+    #[inline]
     fn increment_hl(&mut self, hl: u8) {
-        let hl = self.read_header()
+        let hl = self.read_hl();
+        if hl > 15 {
+            panic!("header len can't be more than 15 (4bits)");
+        }
+        self.header[0] |= hl + 1
     }
 }
 
