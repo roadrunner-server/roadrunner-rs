@@ -44,3 +44,17 @@ pub fn put_u64_be(b: &mut [u8], value: usize) {
     b[6] = value.shr(8) as u8;
     b[7] = value as u8;
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::bit_operations::{read_be, read_le};
+
+    #[test]
+    fn test() {
+        let mut d = [0; 64]; // 1110 0101 0000 0110 10
+        d[0] = 1;
+
+        let res = read_le(&d);
+        assert_eq!(res, 1);
+    }
+}
