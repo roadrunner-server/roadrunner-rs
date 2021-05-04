@@ -86,7 +86,7 @@ impl Frame {
     }
 
     #[inline]
-    fn increment_hl(&mut self, hl: u8) {
+    fn increment_hl(&mut self) {
         let hl = self.read_hl();
         if hl > 15 {
             panic!("header len can't be more than 15 (4bits)");
@@ -104,6 +104,31 @@ impl Frame {
         for flag in flags {
             self.header[1] |= *flag as u8;
         }
+    }
+
+    pub fn write_options(&mut self, options: &[u32]) {
+        if options.len() == 0 {
+            panic!("no options provided");
+        }
+
+        if options.len() > 10 {
+            panic!("header options limited by 40 bytes");
+        }
+
+        let hl = self.read_hl();
+
+        if hl == 15 {
+            panic!("header len could not be more than 14 [0..15)");
+        }
+
+
+        let mut tmp = &[0_u8;FRAME_OPTIONS_MAX_SIZE as usize];
+
+        for i in options {
+            let b = i.to_be_bytes();
+            self.increment_hl();
+        }
+
     }
 }
 
