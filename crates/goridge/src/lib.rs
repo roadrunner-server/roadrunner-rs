@@ -7,5 +7,7 @@ mod frame;
 #[cfg(test)]
 mod tests {
     #[test]
-    fn test() {}
+    fn test() {
+        println!("hello");
+    }
 }

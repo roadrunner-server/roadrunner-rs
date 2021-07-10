@@ -75,8 +75,8 @@ impl<T: Relay> WorkerProcess<T> {
 }
 
 impl<T> Worker<T> for WorkerProcess<T>
-    where
-        T: Relay,
+where
+    T: Relay,
 {
     fn created(&mut self) -> std::time::Instant {
         self.created
