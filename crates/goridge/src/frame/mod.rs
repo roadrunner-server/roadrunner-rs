@@ -1,7 +1,7 @@
 mod frame_flags;
 
-use std::convert::{TryInto};
 use crate::errors::Error;
+use std::convert::TryInto;
 use std::ops::BitAnd;
 
 const WORD: u8 = 4;
@@ -36,7 +36,9 @@ impl Frame {
     #[inline]
     pub fn read_header(&self, data: &[u8]) -> Result<Self, Error> {
         if data.len() < 12 {
-            return Err(Error::HeaderLenError { cause: "len is less than 12".to_string() });
+            return Err(Error::HeaderLenError {
+                cause: "len is less than 12".to_string(),
+            });
         }
         Ok(Frame {
             header: data[..12].try_into().expect("slice with incorrect length"),
@@ -50,13 +52,17 @@ impl Frame {
 
         if opt > 3 {
             return Self {
-                header: data[..(opt * WORD) as usize].try_into().expect("array with incorrect length"),
+                header: data[..(opt * WORD) as usize]
+                    .try_into()
+                    .expect("array with incorrect length"),
                 payload: vec![],
             };
         }
 
         let mut frame = Frame {
-            header: data[..12_usize].try_into().expect("array with incorrect length"),
+            header: data[..12_usize]
+                .try_into()
+                .expect("array with incorrect length"),
             payload: data[12_usize..].to_vec(),
         };
 
@@ -121,17 +127,23 @@ impl Frame {
             panic!("header len could not be more than 14 [0..15)");
         }
 
-
-        let mut tmp = &[0_u8;FRAME_OPTIONS_MAX_SIZE as usize];
+        let mut tmp = &[0_u8; FRAME_OPTIONS_MAX_SIZE as usize];
 
         for i in options {
             let b = i.to_be_bytes();
             self.increment_hl();
         }
-
     }
 }
 
+impl From<&mut Frame> for Vec<u8> {
+    fn from(frame: &mut Frame) -> Self {
+        let mut v = Vec::with_capacity(frame.header.len() + frame.payload.len());
+        v.append(&mut frame.header.to_vec());
+        v.append(&mut frame.payload);
+        return v; // as slice
+    }
+}
 
 #[cfg(test)]
 mod tests {

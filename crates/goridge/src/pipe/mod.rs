@@ -1,12 +1,18 @@
 use crate::errors::Error;
 use crate::frame::Frame;
 use crate::relay::Relay;
+use std::io::Write;
 
-struct Pipes {}
+struct Pipes {
+    stdin: std::io::Stdin,
+    stdout: std::io::Stdout,
+}
 
 impl Relay<Frame> for Pipes {
-    fn send(&mut self, frame: &mut Frame) -> Result<usize, Error> {
-        todo!()
+    fn send(&mut self, frame: &mut Frame) -> Result<(), Error> {
+        let v: Vec<u8> = frame.into();
+        self.stdout.write_all(&v[..])?;
+        Ok(())
     }
 
     fn receive(&mut self) -> Result<Vec<u8>, Error> {

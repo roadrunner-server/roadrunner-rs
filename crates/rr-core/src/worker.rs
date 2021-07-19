@@ -6,7 +6,7 @@ use std::process::Child;
 use std::process::{ChildStderr, ChildStdin, ChildStdout, Command};
 use std::time::Instant;
 
-pub trait Worker<T: Relay> {
+pub trait Worker<T: Relay<T>> {
     // time in unix nano format
     fn created(&mut self) -> std::time::Instant;
 
@@ -45,7 +45,7 @@ struct ChildProcess {
     stderr: Option<ChildStderr>,
 }
 
-pub struct WorkerProcess<T: Relay> {
+pub struct WorkerProcess<T: Relay<T>> {
     created: std::time::Instant,
     // events channel
     state: WorkerState,
@@ -56,7 +56,7 @@ pub struct WorkerProcess<T: Relay> {
     relay: T,
 }
 
-impl<T: Relay> WorkerProcess<T> {
+impl<T: Relay<T>> WorkerProcess<T> {
     fn new(rl: T, command: Command) -> Self {
         WorkerProcess {
             created: Instant::now(),
@@ -76,7 +76,7 @@ impl<T: Relay> WorkerProcess<T> {
 
 impl<T> Worker<T> for WorkerProcess<T>
 where
-    T: Relay,
+    T: Relay<T>,
 {
     fn created(&mut self) -> std::time::Instant {
         self.created
