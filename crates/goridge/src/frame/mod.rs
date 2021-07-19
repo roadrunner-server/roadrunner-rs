@@ -8,13 +8,13 @@ const WORD: u8 = 4;
 const FRAME_OPTIONS_MAX_SIZE: u8 = 40;
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
-struct Frame {
+pub struct Frame {
     header: [u8; 12],
     payload: Vec<u8>,
 }
 
 impl Frame {
-    fn new() -> Self {
+    pub fn new() -> Self {
         let mut f = Frame {
             header: [0; 12],
             payload: vec![],
