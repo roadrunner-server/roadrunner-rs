@@ -25,8 +25,6 @@ pub trait Worker<T: Relay<T>> {
 
     fn kill(&self) -> Result<(), Error>;
 
-    // fn relay(&self) -> T;
-
     fn attach_relay(&mut self, rl: T);
 
     // state
