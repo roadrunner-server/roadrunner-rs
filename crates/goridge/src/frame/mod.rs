@@ -127,10 +127,10 @@ impl Frame {
             panic!("header len could not be more than 14 [0..15)");
         }
 
-        let mut tmp = &[0_u8; FRAME_OPTIONS_MAX_SIZE as usize];
+        let _tmp = &[0_u8; FRAME_OPTIONS_MAX_SIZE as usize];
 
         for i in options {
-            let b = i.to_be_bytes();
+            let _b = i.to_be_bytes();
             self.increment_hl();
         }
     }

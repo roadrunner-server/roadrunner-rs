@@ -163,15 +163,15 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use goridge_rs::pipe::PipeRelay;
-
-    #[test]
-    fn test_init_worker() {
-        let command = Command::new("ls");
-        let pipe_relay = PipeRelay::new_relay(None, None);
-        let mut worker = WorkerProcess::new(pipe_relay, command);
-        let a = worker.start();
-        let b = worker.wait();
-    }
+    // use super::*;
+    // use goridge_rs::pipe::PipeRelay;
+    //
+    // #[test]
+    // fn test_init_worker() {
+    //     let command = Command::new("ls");
+    //     let pipe_relay = PipeRelay::new_relay(None, None);
+    //     let mut worker = WorkerProcess::new(pipe_relay, command);
+    //     let a = worker.start();
+    //     let b = worker.wait();
+    // }
 }
