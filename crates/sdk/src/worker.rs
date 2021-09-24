@@ -1,11 +1,12 @@
 use crate::errors::Error;
 use crate::state::WorkerState;
 use goridge_rs::relay::Relay;
-use std::io::{BufReader, BufWriter, Write, Read, ErrorKind};
-use std::process::{Child, Stdio};
+use log::{debug, info, trace, warn};
+use std::cell::Cell;
+use std::io::{stdout, BufReader, BufWriter, ErrorKind, Read, Write};
+use std::process::{Child, ExitStatus, Stdio};
 use std::process::{ChildStderr, ChildStdin, ChildStdout, Command};
 use std::time::Instant;
-use log::{info, trace, warn, debug};
 
 pub trait Worker<T: Relay<T>> {
     // time in unix nano format
@@ -20,7 +21,7 @@ pub trait Worker<T: Relay<T>> {
 
     fn start(&mut self) -> Result<(), Error>;
 
-    fn wait(&mut self) -> Result<(), Error>;
+    fn wait(&mut self) -> Result<ExitStatus, Error>;
 
     fn exec(&mut self) -> Result<(), Error>;
 
@@ -52,34 +53,42 @@ pub struct WorkerProcess<T: Relay<T>> {
     created: std::time::Instant,
     // events channel
     state: WorkerState,
-    // cmd: std::process::Command,
     pid: u16,
-    child: Option<Child>,
+    child: Child,
     child_fds: Option<ChildProcess>,
     relay: T,
 }
 
 impl<T: Relay<T>> WorkerProcess<T> {
-    fn new(rl: T, cmd: &str) -> Self {
+    fn new(rl: T, cmd: &str) -> Result<Self, Error> {
         debug!("worker_created");
-        // let mut cc = Command::new(cmd).stdin()
-        WorkerProcess {
+
+        let mut cc = Command::new(cmd)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()?;
+
+        Ok(WorkerProcess {
             created: Instant::now(),
             state: WorkerState::default(),
-            // cmd: command,
+            // cmd: Cell::new(cc),
             child_fds: None,
             pid: 0,
             relay: rl,
-            child: None,
-        }
+            child: cc,
+        })
     }
 }
 
 const DEFAULT_BUF_SIZE: usize = 8 * 1024;
 
 pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> std::io::Result<u64>
-where R:std::io::Read, W:std::io::Write {
-    let mut buf = [0;DEFAULT_BUF_SIZE];
+where
+    R: std::io::Read,
+    W: std::io::Write,
+{
+    let mut buf = [0; DEFAULT_BUF_SIZE];
     let mut written = 0;
 
     loop {
@@ -122,18 +131,18 @@ where
         Ok(())
     }
 
-    fn wait(&mut self) -> Result<(), Error> {
-        if let Some(mut ch) = self.child.take() {
-            let res = ch.wait();
-            if let Ok(data) = res {
-                println!("data: {}", data.to_string());
-                return Ok(());
+    fn wait(&mut self) -> Result<ExitStatus, Error> {
+        debug!("wait child process");
+        let res = self.child.wait();
+        return match res {
+            Ok(rr) => Ok(rr),
+            Err(rr) => {
+                eprintln!("return with error: {}", rr);
+                Err(Error::WaitError {
+                    cause: rr.to_string(),
+                })
             }
-        }
-
-        Err(Error::WaitError {
-            cause: "some error".to_string(),
-        })
+        };
     }
 
     fn exec(&mut self) -> Result<(), Error> {

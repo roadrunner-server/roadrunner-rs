@@ -9,7 +9,9 @@ pub enum Error {
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
-        Error::IoError { cause: err.to_string() }
+        Error::IoError {
+            cause: err.to_string(),
+        }
     }
 }
 
