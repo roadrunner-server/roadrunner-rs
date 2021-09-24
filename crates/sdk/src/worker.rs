@@ -1,36 +1,24 @@
 use crate::errors::Error;
+use crate::payload::Payload;
 use crate::state::WorkerState;
 use goridge_rs::relay::Relay;
 use log::{debug, info, trace, warn};
-use std::cell::Cell;
-use std::io::{stdout, BufReader, BufWriter, ErrorKind, Read, Write};
+use std::process::Command;
 use std::process::{Child, ExitStatus, Stdio};
-use std::process::{ChildStderr, ChildStdin, ChildStdout, Command};
 use std::time::Instant;
 
 pub trait Worker<T: Relay<T>> {
     // time in unix nano format
     fn created(&mut self) -> std::time::Instant;
-
     // channel WorkerEvents
     fn events(&self);
-
     fn pid(&self) -> u16;
-
     fn state(&self) -> WorkerState;
-
-    fn start(&mut self) -> Result<(), Error>;
-
     fn wait(&mut self) -> Result<ExitStatus, Error>;
-
-    fn exec(&mut self) -> Result<(), Error>;
-
-    fn exec_ttl(&mut self) -> Result<(), Error>;
-
+    fn exec(&mut self, p: Payload) -> Result<(), Error>;
+    fn exec_ttl(&mut self, p: Payload) -> Result<(), Error>;
     fn stop(&self) -> Result<(), Error>;
-
     fn kill(&self) -> Result<(), Error>;
-
     fn attach_relay(&mut self, rl: T);
 
     // state
@@ -43,19 +31,12 @@ pub trait Worker<T: Relay<T>> {
     fn last_used() -> u64;
 }
 
-struct ChildProcess {
-    stdin: BufWriter<ChildStdin>,
-    stdout: BufReader<Option<ChildStdout>>,
-    stderr: BufReader<Option<ChildStderr>>,
-}
-
 pub struct WorkerProcess<T: Relay<T>> {
     created: std::time::Instant,
     // events channel
     state: WorkerState,
     pid: u16,
     child: Child,
-    child_fds: Option<ChildProcess>,
     relay: T,
 }
 
@@ -63,7 +44,7 @@ impl<T: Relay<T>> WorkerProcess<T> {
     fn new(rl: T, cmd: &str) -> Result<Self, Error> {
         debug!("worker_created");
 
-        let mut cc = Command::new(cmd)
+        let cc = Command::new(cmd)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
@@ -72,35 +53,10 @@ impl<T: Relay<T>> WorkerProcess<T> {
         Ok(WorkerProcess {
             created: Instant::now(),
             state: WorkerState::default(),
-            // cmd: Cell::new(cc),
-            child_fds: None,
             pid: 0,
             relay: rl,
             child: cc,
         })
-    }
-}
-
-const DEFAULT_BUF_SIZE: usize = 8 * 1024;
-
-pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> std::io::Result<u64>
-where
-    R: std::io::Read,
-    W: std::io::Write,
-{
-    let mut buf = [0; DEFAULT_BUF_SIZE];
-    let mut written = 0;
-
-    loop {
-        let len = match reader.read(&mut buf) {
-            Ok(0) => return Ok(written),
-            Ok(len) => len,
-            Err(ref e) if e.kind() == ErrorKind::Interrupted => continue,
-            Err(e) => return Err(e),
-        };
-
-        writer.write_all(&buf[..len])?;
-        written += len as u64;
     }
 }
 
@@ -109,6 +65,7 @@ where
     T: Relay<T>,
 {
     fn created(&mut self) -> std::time::Instant {
+        debug!("created called: {:?}", self.created);
         self.created
     }
 
@@ -125,12 +82,6 @@ where
         self.state
     }
 
-    fn start(&mut self) -> Result<(), Error> {
-        // let spawned = self.cmd.spawn()?;
-        // self.child = Option::from(spawned);
-        Ok(())
-    }
-
     fn wait(&mut self) -> Result<ExitStatus, Error> {
         debug!("wait child process");
         let res = self.child.wait();
@@ -145,12 +96,14 @@ where
         };
     }
 
-    fn exec(&mut self) -> Result<(), Error> {
-        // self.child.
-        todo!()
+    fn exec(&mut self, p: Payload) -> Result<(), Error> {
+        assert!(p.body.len() > 0);
+        assert!(p.context.len() > 0);
+
+        Ok(())
     }
 
-    fn exec_ttl(&mut self) -> Result<(), Error> {
+    fn exec_ttl(&mut self, p: Payload) -> Result<(), Error> {
         todo!()
     }
 

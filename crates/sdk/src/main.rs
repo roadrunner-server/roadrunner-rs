@@ -4,6 +4,8 @@
 mod errors;
 mod state;
 mod worker;
+mod payload;
+
 use clap::{App, AppSettings, SubCommand};
 
 fn main() {
