@@ -1,10 +1,11 @@
 use crate::errors::Error;
 use crate::state::WorkerState;
 use goridge_rs::relay::Relay;
-use std::io::{BufReader, BufWriter};
-use std::process::Child;
+use std::io::{BufReader, BufWriter, Write, Read, ErrorKind};
+use std::process::{Child, Stdio};
 use std::process::{ChildStderr, ChildStdin, ChildStdout, Command};
 use std::time::Instant;
+use log::{info, trace, warn, debug};
 
 pub trait Worker<T: Relay<T>> {
     // time in unix nano format
@@ -21,6 +22,10 @@ pub trait Worker<T: Relay<T>> {
 
     fn wait(&mut self) -> Result<(), Error>;
 
+    fn exec(&mut self) -> Result<(), Error>;
+
+    fn exec_ttl(&mut self) -> Result<(), Error>;
+
     fn stop(&self) -> Result<(), Error>;
 
     fn kill(&self) -> Result<(), Error>;
@@ -33,42 +38,60 @@ pub trait Worker<T: Relay<T>> {
     fn num_execs() -> u64;
     fn is_active() -> bool;
     fn register_exec();
-    fn set_last_used(lu: u64);
+    fn set_last_used(&mut self, lu: u64);
     fn last_used() -> u64;
 }
 
 struct ChildProcess {
-    stdin: Option<BufWriter<ChildStdin>>,
-    stdout: Option<ChildStdout>,
-    stderr: Option<ChildStderr>,
+    stdin: BufWriter<ChildStdin>,
+    stdout: BufReader<Option<ChildStdout>>,
+    stderr: BufReader<Option<ChildStderr>>,
 }
 
 pub struct WorkerProcess<T: Relay<T>> {
     created: std::time::Instant,
     // events channel
     state: WorkerState,
-    cmd: std::process::Command,
+    // cmd: std::process::Command,
     pid: u16,
     child: Option<Child>,
-    child_fds: ChildProcess,
+    child_fds: Option<ChildProcess>,
     relay: T,
 }
 
 impl<T: Relay<T>> WorkerProcess<T> {
-    fn new(rl: T, command: Command) -> Self {
+    fn new(rl: T, cmd: &str) -> Self {
+        debug!("worker_created");
+        // let mut cc = Command::new(cmd).stdin()
         WorkerProcess {
             created: Instant::now(),
             state: WorkerState::default(),
-            cmd: command,
-            child_fds: ChildProcess {
-                stdin: None,
-                stdout: None,
-                stderr: None,
-            },
+            // cmd: command,
+            child_fds: None,
             pid: 0,
             relay: rl,
             child: None,
         }
+    }
+}
+
+const DEFAULT_BUF_SIZE: usize = 8 * 1024;
+
+pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> std::io::Result<u64>
+where R:std::io::Read, W:std::io::Write {
+    let mut buf = [0;DEFAULT_BUF_SIZE];
+    let mut written = 0;
+
+    loop {
+        let len = match reader.read(&mut buf) {
+            Ok(0) => return Ok(written),
+            Ok(len) => len,
+            Err(ref e) if e.kind() == ErrorKind::Interrupted => continue,
+            Err(e) => return Err(e),
+        };
+
+        writer.write_all(&buf[..len])?;
+        written += len as u64;
     }
 }
 
@@ -94,11 +117,8 @@ where
     }
 
     fn start(&mut self) -> Result<(), Error> {
-        let mut spawned = self.cmd.spawn()?;
-        let stdin = BufWriter::new(spawned.stdin.take().unwrap());
-        let stdout = BufReader::new(spawned.stdout.take().unwrap());
-        let stderr = BufReader::new(spawned.stderr.take().unwrap());
-        self.child_fds.stdin = Option::from(stdin);
+        // let spawned = self.cmd.spawn()?;
+        // self.child = Option::from(spawned);
         Ok(())
     }
 
@@ -116,6 +136,15 @@ where
         })
     }
 
+    fn exec(&mut self) -> Result<(), Error> {
+        // self.child.
+        todo!()
+    }
+
+    fn exec_ttl(&mut self) -> Result<(), Error> {
+        todo!()
+    }
+
     fn stop(&self) -> Result<(), Error> {
         unimplemented!()
     }
@@ -123,10 +152,6 @@ where
     fn kill(&self) -> Result<(), Error> {
         unimplemented!()
     }
-
-    // fn relay(&self) -> T {
-    //     self.relay
-    // }
 
     fn attach_relay(&mut self, rl: T) {
         self.relay = rl;
@@ -152,7 +177,7 @@ where
         todo!()
     }
 
-    fn set_last_used(lu: u64) {
+    fn set_last_used(&mut self, lu: u64) {
         todo!()
     }
 
