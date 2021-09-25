@@ -3,7 +3,7 @@ pub mod bit_operations;
 pub mod errors;
 pub mod relay;
 mod frame;
-mod pipe;
+pub mod pipe;
 
 #[cfg(test)]
 mod tests {

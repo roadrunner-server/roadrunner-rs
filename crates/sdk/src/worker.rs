@@ -33,7 +33,6 @@ pub trait Worker<T: Relay<T>> {
 
 pub struct WorkerProcess<T: Relay<T>> {
     created: std::time::Instant,
-    // events channel
     state: WorkerState,
     pid: u16,
     child: Child,
@@ -150,6 +149,12 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::worker::WorkerProcess;
+
+    #[test]
+    fn test_init_worker() {
+        // WorkerProcess::new(goridge_rs::pipe::Pipes {}, "test");
+    }
     // use super::*;
     // use goridge_rs::pipe::PipeRelay;
     //

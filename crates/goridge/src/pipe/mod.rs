@@ -3,7 +3,7 @@ use crate::frame::Frame;
 use crate::relay::Relay;
 use std::io::Write;
 
-struct Pipes {
+pub struct Pipes {
     stdin: std::io::Stdin,
     stdout: std::io::Stdout,
 }
