@@ -1,11 +1,12 @@
 use crate::errors::Error;
 use crate::frame::Frame;
 use crate::relay::Relay;
-use std::io::Write;
+use std::io::{BufReader, Read, Write};
+use std::process::{Command, Stdio};
 
 pub struct Pipes {
-    stdin: std::io::Stdin,
-    stdout: std::io::Stdout,
+    stdout: Box<dyn Write>,
+    stdin: Box<dyn Read>,
 }
 
 impl Relay<Frame> for Pipes {
@@ -16,7 +17,10 @@ impl Relay<Frame> for Pipes {
     }
 
     fn receive(&mut self) -> Result<Vec<u8>, Error> {
-        todo!()
+        let mut reader = BufReader::new(&mut self.stdin);
+        let mut data: Vec<u8> = vec![];
+        reader.read_to_end(&mut data)?;
+        Ok(data)
     }
 
     fn receive_string(&mut self) -> Result<String, Error> {
@@ -25,5 +29,17 @@ impl Relay<Frame> for Pipes {
 
     fn close(&self) {
         todo!()
+    }
+}
+
+impl Pipes {
+    fn new(cmd: &str) -> Self {
+        let mut command = Command::new(cmd)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn();
+
+        Pipes {}
     }
 }
