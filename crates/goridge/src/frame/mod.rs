@@ -134,6 +134,13 @@ impl Frame {
             self.increment_hl();
         }
     }
+
+    pub fn bytes(&mut self) -> Vec<u8> {
+        let mut v = Vec::with_capacity(self.header.len() + self.payload.len());
+        v.append(&mut self.header.to_vec());
+        v.append(&mut self.payload);
+        return v;
+    }
 }
 
 impl From<&mut Frame> for Vec<u8> {
