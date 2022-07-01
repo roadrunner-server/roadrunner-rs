@@ -12,11 +12,11 @@ pub struct Pipes {
 
 impl Relay<Frame> for Pipes {
     fn send(&mut self, frame: &mut Frame) -> Result<(), Error> {
-        let stderr = self.stdin.as_mut();
+        let stdin= self.stdin.as_mut();
 
-        match stderr {
+        match stdin {
             None => Err(Error::PipeError {
-                cause: "".to_string(),
+                cause: "no stdin".to_string(),
             }),
             Some(child) => {
                 let mut buf = BufWriter::new(child);
@@ -30,16 +30,16 @@ impl Relay<Frame> for Pipes {
         }
     }
 
-    fn receive(&mut self) -> Result<Vec<u8>, Error> {
+    fn receive_stderr(&mut self) -> Result<Vec<u8>, Error> {
         let stderr = self.stderr.as_mut();
         match stderr {
-            None => Err(Error::PipeError {
-                cause: "".to_string(),
-            }),
-            Some(stdout) => {
-                let mut buf = BufReader::new(stdout);
-
+            // no data
+            None => Ok(vec![]),
+            // some data
+            Some(child) => {
+                let mut buf = BufReader::new(child);
                 let mut data = vec![];
+
                 match buf.read_to_end(&mut data) {
                     Ok(_) => Ok(data),
                     Err(err) => Err(Error::PipeError {
@@ -50,18 +50,35 @@ impl Relay<Frame> for Pipes {
         }
     }
 
-    fn receive_string(&mut self) -> Result<String, Error> {
-        todo!()
-    }
+    fn receive_stdout(&mut self) -> Result<Frame, Error> {
+        let stdout = self.stdout.as_mut();
+        match stdout {
+            None => Err(Error::PipeError {
+                cause: "".to_string(),
+            }),
+            Some(child) => {
+                let mut buf = BufReader::new(child);
+                let mut fr = Frame::default();
 
-    fn close(&self) {
-        todo!()
+                // read only header, 12 bytes
+                buf.read_exact(&mut fr.header())?;
+
+                let mut data = vec![];
+                match buf.read_to_end(&mut data) {
+                    Ok(_) => Ok(Frame::from(data)),
+                    Err(err) => Err(Error::PipeError {
+                        cause: err.to_string(),
+                    }),
+                }
+            }
+        }
     }
 }
 
 impl Pipes {
-    fn new(cmd: &str) -> Result<Self, std::io::Error> {
-        let command = Command::new(cmd)
+    fn new(cmd: &[&str]) -> Result<Self, std::io::Error> {
+        let command = Command::new(cmd[0])
+            .args(cmd)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
@@ -75,7 +92,6 @@ impl Pipes {
     }
 }
 
-#[cfg(test)]
 mod tests {
     use crate::pipe::Pipes;
     use crate::relay::Relay;
@@ -85,10 +101,10 @@ mod tests {
     fn test1() {
         let cmd: &str = "ls";
 
-        let mut p = Pipes::new("ls").unwrap();
+        let mut p = Pipes::new(&["php", "/home/valery/projects/opensource/github/rustatian/roadrunner-rs/crates/goridge/tests/worker.php"]).unwrap();
         let data = p.receive().unwrap();
+        println!("{:?}", std::str::from_utf8(&data));
         let data2 = p.receive().unwrap();
-
-        println!("{:?}", data);
+        println!("{:?}", std::str::from_utf8(&data2));
     }
 }

@@ -13,8 +13,8 @@ pub struct Frame {
     payload: Vec<u8>,
 }
 
-impl Frame {
-    pub fn new() -> Self {
+impl Default for Frame {
+    fn default() -> Self {
         let mut f = Frame {
             header: [0; 12],
             payload: vec![],
@@ -22,7 +22,9 @@ impl Frame {
         f.default_hl();
         f
     }
+}
 
+impl Frame {
     #[inline]
     fn write_hl(&mut self, hl: u8) {
         self.header[0] |= hl;
@@ -31,6 +33,11 @@ impl Frame {
     #[inline]
     fn default_hl(&mut self) {
         self.write_hl(3);
+    }
+
+    #[inline(always)]
+    pub(crate) fn header(&mut self) -> [u8;12] {
+        self.header
     }
 
     #[inline]
@@ -148,7 +155,21 @@ impl From<&mut Frame> for Vec<u8> {
         let mut v = Vec::with_capacity(frame.header.len() + frame.payload.len());
         v.append(&mut frame.header.to_vec());
         v.append(&mut frame.payload);
-        return v; // as slice
+        v // as slice
+    }
+}
+
+impl From<Vec<u8>> for Frame {
+    fn from(data: Vec<u8>) -> Self {
+        let mut fr = Frame::default();
+        fr.read_header(&data).expect("header read failed");
+
+        // we have an options
+        if fr.read_hl() > 3 {
+
+        }
+
+        fr
     }
 }
 
@@ -158,7 +179,7 @@ mod tests {
 
     #[test]
     fn test1() {
-        let mut ff = Frame::new();
+        let mut ff = Frame::default();
         ff.write_hl(3);
         println!("{:?}", ff);
         ff.read_header(&[0; 11]).expect("error");

@@ -1,4 +1,5 @@
-use std::rc::Rc;
+use std::io;
+use std::net::TcpListener;
 
 #[cfg(test)]
 mod tests {
@@ -6,28 +7,26 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let p = Plugin::new();
+        let p = Plugin::new("127.0.0.1:7878").unwrap();
     }
 }
 
 #[derive(Default)]
-struct Plugin {
+pub struct Plugin {
 
 }
 
 impl Plugin {
-    fn new() -> Plugin {
-        let s = Rc::new("foo".to_string());
-        let t = s;
-        let u = t;
-        Self{}
+    pub fn new(val: &str) -> Result<Plugin, io::Error> {
+        let listener = TcpListener::bind(val)?;
+
+        for stream in listener.incoming() {
+            let stream = stream?;
+
+            println!("connection established!");
+        }
+
+        Ok(Plugin{})
     }
 
-    // fn start() -> Result<>
-}
-
-
-pub struct SpiderRobot {
-    species: String,
-    web_enabled:bool,
 }

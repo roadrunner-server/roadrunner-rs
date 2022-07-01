@@ -97,7 +97,7 @@ impl Worker for Pipes {
 }
 
 pub struct WorkerProcess {
-    created: std::time::Instant,
+    created: Instant,
     state: WorkerState,
     pid: u16,
     child: Child,
@@ -123,7 +123,7 @@ impl WorkerProcess {
 }
 
 impl Worker for WorkerProcess {
-    fn created(&mut self) -> std::time::Instant {
+    fn created(&mut self) -> Instant {
         debug!("created called: {:?}", self.created);
         self.created
     }
@@ -156,8 +156,9 @@ impl Worker for WorkerProcess {
     }
 
     fn exec(&mut self, p: Payload) -> Result<(), Error> {
-        assert!(p.body.len() > 0);
-        assert!(p.context.len() > 0);
+        assert!(!p.body.is_empty());
+        assert!(!p.context.is_empty());
+
 
         Ok(())
     }
