@@ -1,5 +1,4 @@
 use std::io;
-mod errors;
 mod state;
 mod worker;
 mod payload;
@@ -23,8 +22,6 @@ fn main() -> Result<(), io::Error> {
     //
     //     _ => unreachable!(),
     // }
-
-    let p = http::Plugin::new("127.0.0.1:7878")?;
 
     Ok(())
 }
