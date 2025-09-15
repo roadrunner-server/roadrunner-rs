@@ -4,8 +4,8 @@ use anyhow::anyhow;
 use goridge_rs::frame::Frame;
 use goridge_rs::frame::frame_flags::Flag::{CodecProto, Error as GoridgeErrorBit};
 use goridge_rs::pipe::Pipes;
-use log::debug;
 use std::time::Instant;
+use tracing::{debug, info, warn};
 
 pub struct WorkerProcess {
     created: Instant,
@@ -16,7 +16,7 @@ pub struct WorkerProcess {
 
 impl WorkerProcess {
     async fn new(cmd: &[&str]) -> anyhow::Result<Self> {
-        debug!("worker_created");
+        debug!("worker_created: {}", cmd.join(" "));
 
         let mut p = Pipes::new(cmd).await?;
         let id = p.id().await?;
@@ -65,7 +65,7 @@ impl WorkerProcess {
 
         let flags = frame_receive.read_flags();
         if flags & (GoridgeErrorBit as u8) != 0 {
-            return Err(anyhow!(""));
+            return Err(anyhow!("goridge error flag is set"));
         }
 
         let options = frame_receive.read_options();
@@ -98,13 +98,13 @@ mod tests {
 
     use crate::payload::Payload;
     use crate::worker::WorkerProcess;
-    use log::{debug, error, info, warn};
+    use tracing::{warn, info, error};
     use std::str::from_utf8;
     use std::time::Instant;
 
     #[tokio::test]
     async fn test_init_worker() {
-        env_logger::init();
+        tracing_subscriber::fmt::init();
         let mut wp = WorkerProcess::new(&["php", "../../tests/worker.php"])
             .await
             .unwrap();

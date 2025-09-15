@@ -5,7 +5,6 @@ mod payload;
 
 
 fn main() -> Result<(), io::Error> {
-    env_logger::init();
     // let cli = App::new(env!("CARGO_PKG_NAME"))
     //     .version(env!("CARGO_PKG_VERSION"))
     //     .author(env!("CARGO_PKG_AUTHORS"))

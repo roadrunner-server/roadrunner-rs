@@ -1,4 +1,4 @@
-mod r#trait;
+mod plugin;
 
 #[cfg(test)]
 mod tests {

@@ -1,3 +1,13 @@
 [workspace]
 members = ["crates/*"]
 resolver = "2"
+
+[workspace.dependencies]
+tracing = "0"
+tracing-subscriber = { version = "0", features = ["env-filter", "fmt"] }
+tokio = { version = "1", features = ["rt-multi-thread", "process", "macros"] }
+anyhow = "1"
+clap = "4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+libloading = "0.8"
